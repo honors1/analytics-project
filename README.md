@@ -1,2 +1,3 @@
-# api-book-part-two
-Source code for Part 2 of Hands on APIs for AI and Data Science
+# 2부
+
+AI와 데이터 사이언스 API 2부에서 다루는 내용을 실습하기 위한 소스 코드 모음
