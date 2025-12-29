@@ -6,7 +6,7 @@ def upsert_player_data(player_json):
     import sqlite3
     import pandas as pd
 
-# Fetch the connection object
+    # Airflow UI에서 정의한 데이터베이스 연결 정보 가져오기
     database_conn_id = 'analytics_database'
     connection = BaseHook.get_connection(database_conn_id)
     
@@ -16,11 +16,11 @@ def upsert_player_data(player_json):
 
         player_data = json.loads(player_json)
         
-        # Use a context manager for the SQLite connection
+        # SQLite 연결은 콘텍스트 매니저로 관리한다
         with sqlite3.connect(sqlite_db_path) as conn:
             cursor = conn.cursor()
 
-            # Insert each player record into the 'player' table
+            # 각 선수 성적을 'player' 테이블에 삽입 또는 갱신
             for player in player_data:
                 try:
                     cursor.execute("""
@@ -49,6 +49,6 @@ def upsert_player_data(player_json):
                     raise
                     
     else:
-        logging.warning("No player data found.")
+        logging.warning("선수 데이터를 찾을 수 없습니다.")
         raise ValueError(
-            "No player data found. Task failed due to missing data.")
+            "선수 데이터를 찾을 수 없습니다. 데이터 누락으로 태스크가 실패했습니다.")

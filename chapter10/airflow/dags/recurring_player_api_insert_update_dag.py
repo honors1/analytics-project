@@ -11,7 +11,7 @@ def health_check_response(response):
     logging.info(f"Response status code: {response.status_code}")
     logging.info(f"Response body: {response.text}")
     return response.status_code == 200 and response.json() == {
-        "message": "API health check successful"
+        "message": "API 상태 확인 성공"
     }
 
 
@@ -23,7 +23,7 @@ def insert_update_player_data(**context):
         upsert_player_data(player_json)
 
     else:
-        logging.warning("No player data found.")
+        logging.warning("선수 데이터를 찾지 못했습니다.")
 
 
 @dag(start_date=datetime.datetime(2024, 8, 7), schedule_interval=None, catchup=False)
@@ -56,9 +56,9 @@ def recurring_player_api_insert_update_dag():
         provide_context=True,
     )
 
-    # Define the task dependencies
+    # 태스크 실행 순서 지정
     api_health_check_task >> api_player_query_task >> player_sqlite_upsert_task
 
 
-# Instantiate the DAG
+# DAG 인스턴스화
 dag_instance = recurring_player_api_insert_update_dag()

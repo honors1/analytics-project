@@ -1,1 +1,1 @@
-#readme file for chapter 10
+# 10장 readme 파일

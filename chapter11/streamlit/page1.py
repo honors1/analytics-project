@@ -5,8 +5,8 @@ import logging
 
 logger = logging.getLogger(__name__) 
 
-st.header("SportsWorldCentral Data App")
-st.subheader("Team Rosters Page")
+st.header("SportsWorldCentral 데이터 앱")
+st.subheader("팀 선수 명단 페이지")
 
 base_url = st.session_state['base_url']
 
@@ -28,7 +28,7 @@ try:
         selected_league = st.sidebar.selectbox('Pick league ID',unique_leagues)
   
         st.sidebar.divider()
-        st.sidebar.subheader(":blue[Data sources]")
+        st.sidebar.subheader(":blue[데이터 출처]")
         st.sidebar.text("SportsWorldCentral")
         
         flat_team_df = pd.json_normalize(
@@ -48,9 +48,9 @@ try:
         st.dataframe(display_df,hide_index=True)
     
     else:
-        logger.error(f"Error encountered: {team_api_response.status_code} {team_api_response.text}")
-        st.write("Error encountered while accessing data source.")
+        logger.error(f"오류 발생: {team_api_response.status_code} {team_api_response.text}")
+        st.write("데이터 소스에 접근하는 동안 오류가 발생했습니다.")
 
 except Exception as e:
-    logger.error(f"Exception encountered: {str(e)}")
-    st.write(f"An unexpected error occurred.")
+    logger.error(f"예외 발생: {str(e)}")
+    st.write(f"예상치 못한 오류가 발생했습니다.")

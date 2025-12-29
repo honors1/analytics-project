@@ -1,4 +1,4 @@
-"""FastAPI program - Part two"""
+"""FastAPI 프로그램 - 2부"""
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -9,34 +9,34 @@ import crud, schemas
 from database import SessionLocal
 
 api_description = """
-This API provides read-only access to info from the Sports World Central (SWC) Fantasy Football API. 
-The endpoints are grouped into the following categories:
+이 API는 Sports World Central(SWC) 판타지 풋볼 API의 정보를 읽기 전용(Read-only)으로 제공합니다.
+엔드포인트는 다음과 같이 구성되어 있습니다.
 
-## Analytics
-Get information about health of the API and counts of leagues, teams, and players.
+## 분석(Analytics)
+API의 상태와 리그, 팀, 선수 수에 대한 통계를 제공합니다.
 
-## Player
-You can get a list of an NFL players, or search for an individual player by player_id.
+## 선수(Player)
+NFL 선수 목록과 개별 선수 정보를 제공합니다.
 
-## Scoring
-You can get a list of NFL player performances, including the fantasy points they scored using SWC league scoring.
+## 성적(Scoring)
+SWC 리그 채점 방식을 기준으로 계산한 NFL 선수들의 주간 성적(판타지 점수 포함)을 제공합니다.
 
-## Membership
-Get information about all the SWC fantasy football leagues and the teams in them.
+## 멤버십(Membership)
+SWC 판타지 풋볼 리그와 각 리그에 속한 팀 정보를 제공합니다.
 
-## General
-Get information about the SWC fantasy football platform as a whole.
+## 일반(General)
+SWC 판타지 풋볼 플랫폼 전반에 대한 정보를 제공합니다.
 """
 
-# FastAPI constructor with additional details added for OpenAPI Specification
+# OpenAPI 명세에 표시될 추가 설명이 포함된 FastAPI 애플리케이션 생성자
 app = FastAPI(
     description=api_description,
-    title="Sports World Central (SWC) Fantasy Football API",
+    title="Sports World Central (SWC) 판타지 풋볼 API",
     version="0.2",
 )
 
 
-# Dependency
+# 데이터베이스 세션을 제공하는 종속성 함수
 def get_db():
     db = SessionLocal()
     try:
@@ -47,9 +47,10 @@ def get_db():
 
 @app.get(
     "/",
-    summary="Check to see if the SWC fantasy football API is running",
-    description="""Use this endpoint to check if the API is running. You can also check it first before making other calls to be sure it's running.""",
-    response_description="A JSON record with a message in it. If the API is running the message will say successful.",
+    summary="SWC 판타지 풋볼 API의 상태를 확인합니다.",
+    description="""이 엔드포인트를 사용해 API가 실행 중인지 확인합니다. 
+    다른 엔드포인트를 호출하기 전에 먼저 호출해 API의 상태를 확인할 수도 있습니다.""",
+    response_description="메시지가 포함된 JSON 응답입니다. API가 실행 중이면 메시지가 '성공(successful)'이라고 표시됩니다.",
     operation_id="v0_health_check",
     tags=["analytics"],
 )
@@ -60,27 +61,29 @@ async def root():
 @app.get(
     "/v0/players/",
     response_model=list[schemas.Player],
-    summary="Get all the SWC players that meet all the parameters you sent with your request",
-    description="""Use this endpoint to get a list of SWC players. You can use the parameters to filter down the players in the list. Names are not unique. You use the skip and limit to perform pagination of the API. Don't use the Player ID values to perform counts. Those are not guaranteed to be in order.""",
-    response_description="A list of NFL players that are in SWC fantasy football. They don't have to be on a team.",
+    summary="요청한 조건을 모두 만족하는 모든 SWC 선수를 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC 선수을 조회합니다. 매개변수를 사용해 결과를 필터링할 수 있습니다. 
+    선수 이름은 고유하지 않으며, skip과 limit를 사용해 쪽매김을 수행합니다. 
+    Player ID는 순서가 보장되지 않으므로 선수 숫자를 세는 데 사용해서는 안됩니다.""",
+    response_description="SWC 판타지 풋볼에 등록된 NFL 선수 목록으로, 선수는 특정 팀에 소속되어 있지 않을 수도 있습니다.",
     operation_id="v0_get_players",
     tags=["players"],
 )
 def read_players(
     skip: int = Query(
-        0, description="The number of items to skip at the beginning of API call."
+        0, description="API 호출 시 건너뛸 항목의 개수"
     ),
     limit: int = Query(
-        100, description="The number of records to return after the skipped records."
+        100, description="건너뛴 항목 이후 반환할 항목의 최대 개수"
     ),
     minimum_last_changed_date: date = Query(
         None,
-        description="The minimum data of change that you want to return records. Exclude any records changed before this.",
+        description="항목을 반환할 최소 변경 날짜. 이 날짜 이전에 변경된 항목은 제외합니다.",
     ),
     first_name: str = Query(
-        None, description="The first name of the players to return"
+        None, description="반환할 선수의 이름"
     ),
-    last_name: str = Query(None, description="The last name of the players to return"),
+    last_name: str = Query(None, description="반환할 선수의 성"),
     db: Session = Depends(get_db),
 ):
     players = crud.get_players(
@@ -97,38 +100,38 @@ def read_players(
 @app.get(
     "/v0/players/{player_id}",
     response_model=schemas.Player,
-    summary="Get one player using the Player ID, which is internal to SWC",
-    description="If you have an SWC Player ID of a player from another API call such as v0_get_players, you can call this API using the player ID",
-    response_description="One NFL player",
+    summary="SWC 내부에서 사용되는 Player ID를 사용해 개별 선수를 조회합니다.",
+    description="다른 API 호출(예: v0_get_players)에서 얻은 SWC Player ID로 개별 선수를 조회합니다.",
+    response_description="NFL 선수에 대한 정보",
     operation_id="v0_get_players_by_player_id",
     tags=["players"],
 )
 def read_player(player_id: int, db: Session = Depends(get_db)):
     player = crud.get_player(db, player_id=player_id)
     if player is None:
-        raise HTTPException(status_code=404, detail="Player not found")
+        raise HTTPException(status_code=404, detail="선수를 찾을 수 없습니다.")
     return player
 
 
 @app.get(
     "/v0/performances/",
     response_model=list[schemas.Performance],
-    summary="Get all the weekly performances that meet all the parameters you sent with your request",
-    description="""Use this endpoint to get lists of weekly performances by players in the SWC. You us the skip and limit to perform pagination of the API. Don't use the Performance ID for counting or logic, because that is an internal ID and is not guaranteed to be sequential""",
-    response_description="A list of weekly scoring performances. It may be by multiple players.",
+    summary="요청 조건을 모두 만족하는 모든 주간 성적을 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC에서 선수의 주간 성적을 조회합니다. skip과 limit를 사용해 쪽매김을 수행합니다. 
+    Performance ID는 SWC 내부에서 사용되는 ID로 순서가 보장되지 않으므로 선수 숫자를 세거나 논리 계산에 사용해서는 안됩니다.""",
     operation_id="v0_get_performances",
     tags=["scoring"],
 )
 def read_performances(
     skip: int = Query(
-        0, description="The number of items to skip at the beginning of API call."
+        0, description="API 호출 시 건너뛸 항목의 개수"
     ),
     limit: int = Query(
-        100, description="The number of records to return after the skipped records."
+        100, description="건너뛴 항목 이후 반환할 항목의 최대 개수"
     ),
     minimum_last_changed_date: date = Query(
         None,
-        description="The minimum data of change that you want to return records. Exclude any records changed before this.",
+        description="항목을 반환할 최소 변경 날짜. 이 날짜 이전에 변경된 항목은 제외합니다.",
     ),
     db: Session = Depends(get_db),
 ):
@@ -141,41 +144,42 @@ def read_performances(
 @app.get(
     "/v0/leagues/{league_id}",
     response_model=schemas.League,
-    summary="Get one league by league id",
-    description="""Use this endpoint to get a single league that matches the league ID provided by the user.""",
-    response_description="An SWC league",
+    summary="League ID로 개별 리그를 조회힙니다.",
+    description="""이 엔드포인트를 사용해 League ID로 리그를 조회합니다.""",
+    response_description="SWC 리그에 대한 정보",
     operation_id="v0_get_league_by_league_id",
     tags=["membership"],
 )
 def read_league(league_id: int, db: Session = Depends(get_db)):
     league = crud.get_league(db, league_id=league_id)
     if league is None:
-        raise HTTPException(status_code=404, detail="League not found")
+        raise HTTPException(status_code=404, detail="리그를 찾을 수 없습니다.")
     return league
 
 
 @app.get(
     "/v0/leagues/",
     response_model=list[schemas.League],
-    summary="Get all the SWC fantasy football leagues that match the parameters you send",
-    description="""Use this endpoint to get lists of SWC fantasy football leagues. You us the skip and limit to perform pagination of the API. League name is not guaranteed to be unique. Don't use the League ID for counting or logic, because that is an internal ID and is not guaranteed to be sequential""",
-    response_description="A list of leagues on the SWC fantasy football website.",
+    summary="요청 조건을 모두 만족하는 모든 SWC 판타지 풋볼 리그를 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC 판타지 풋볼 리그을 조회합니다. 리그 이름은 고유하지 않으며, skip과 limit를 사용해 쪽매김을 수행합니다. 
+    League ID는 SWC 내부에서 사용되는 ID로 순서가 보장되지 않으므로 선수 숫자를 세거나 논리 계산에 사용해서는 안됩니다.""",
+    response_description="SWC 판타지 풋볼 웹사이트에 등록된 리그 목록",
     operation_id="v0_get_leagues",
     tags=["membership"],
 )
 def read_leagues(
     skip: int = Query(
-        0, description="The number of items to skip at the beginning of API call."
+        0, description="API 호출 시 건너뛸 항목의 개수"
     ),
     limit: int = Query(
-        100, description="The number of records to return after the skipped records."
+        100, description="건너뛴 항목 이후 반환할 항목의 최대 개수"
     ),
     minimum_last_changed_date: date = Query(
         None,
-        description="The minimum data of change that you want to return records. Exclude any records changed before this.",
+        description="항목을 반환할 최소 변경 날짜. 이 날짜 이전에 변경된 항목은 제외합니다.",
     ),
     league_name: str = Query(
-        None, description="Name of the leagues to return. Not unique in the SWC."
+        None, description="리그 이름. SWC에서는 고유하지 않습니다. "
     ),
     db: Session = Depends(get_db),
 ):
@@ -192,29 +196,30 @@ def read_leagues(
 @app.get(
     "/v0/teams/",
     response_model=list[schemas.Team],
-    summary="Get all the SWC fantasy football teams that match the parameters you send",
-    description="""Use this endpoint to get lists of SWC fantasy football teams. You us the skip and limit to perform pagination of the API. Team name may not be unique. If you get the Team ID from another query you can match it with the Team ID from this query.  Don't use the Team ID for counting or logic.""",
-    response_description="A list of teams on the SWC fantasy football website.",
+    summary="요청 조건을 모두 만족하는 모든 판타지 풋볼 팀을 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC 판타지 풋볼 팀 목록을 조회합니다. skip과 limit를 사용해 쪽매김을 수행합니다. 
+    다른 API 호출에서 얻은 Team ID로 개별 팀을 조회합니다. 팀 이름은 고유하지 않으므로  팀 숫자를 세거나 논리 계산에 사용해서는 안됩니다.""",
+    response_description="SWC 판타지 풋볼 웹사이트에 등록된 팀 목록",
     operation_id="v0_get_teams",
     tags=["membership"],
 )
 def read_teams(
     skip: int = Query(
-        0, description="The number of items to skip at the beginning of API call."
+        0, description="API 호출 시 건너뛸 항목의 개수"
     ),
     limit: int = Query(
-        100, description="The number of records to return after the skipped records."
+        100, description="건너뛴 항목 이후 반환할 항목의 최대 개수"
     ),
     minimum_last_changed_date: date = Query(
         None,
-        description="The minimum data of change that you want to return records. Exclude any records changed before this.",
+        description="항목을 반환할 최소 변경 날짜. 이 날짜 이전에 변경된 항목은 제외합니다.",
     ),
     team_name: str = Query(
         None,
-        description="Name of the teams to return. Not unique across SWC, but is unique inside a league.",
+        description="조회한 팀 이름. SWC 전체에서 고유하지 않지만, 리그 내에서는 고유합니다.",
     ),
     league_id: int = Query(
-        None, description="League ID of the teams to return. Unique in SWC."
+        None, description="조회한 팀의 League ID. SWC에서 고유합니다."
     ),
     db: Session = Depends(get_db),
 ):
@@ -232,9 +237,11 @@ def read_teams(
 @app.get(
     "/v0/counts/",
     response_model=schemas.Counts,
-    summary="Get counts of the number of leagues, teams, and players in the SWC fantasy football",
-    description="""Use this endpoint to count the number of leagues, teams, and players in the SWC fantasy football. Use in combination with skip and limit in v0_get leagues, v0_get_teams, or v0_get_players. Use this endpoint to get counts instead of making calls to the other APIs.""",
-    response_description="A list of teams on the SWC fantasy football website.",
+    summary="SWC 판타지 풋볼의 리그, 팀, 선수 수를 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC 판타지 풋볼의 리그, 팀, 선수 수를 조회합니다. 
+    v0_get leagues, v0_get_teams 또는 v0_get_players에서 skip과 limit을 함께 사용할 수 있습니다. 
+    다른 API를 호출하는 대신 이 엔드포인트를 사용해 개수를 조회할 수 있습니다.""",
+    response_description="SWC 판타지 풋볼 웹사이트에 등록된 리그, 팀, 선수 집계 정보",
     operation_id="v0_get_counts",
     tags=["analytics"],
 )
@@ -252,22 +259,23 @@ def get_count(db: Session = Depends(get_db)):
 @app.get(
     "/v0/weeks/",
     response_model=list[schemas.Week],
-    summary="Get all the SWC weeks that meet all the parameters you sent with your request",
-    description="""Use this endpoint to get a list of SWC weeks. You can use the parameters to filter down the weeks in the list. You use the skip and limit to perform pagination of the API.""",
-    response_description="A list of weeks in SWC fantasy football.",
+    summary="요청 조건을 모두 만족하는 모든 SWC 주간 정보를 조회합니다.",
+    description="""이 엔드포인트를 사용해 SWC 주 목록을 조회합니다. 매개변수를 사용해 결과를 필터링할 수 있습니다.
+    skip과 limit를 사용해 쪽매김을 수행합니다.""",
+    response_description="SWC 판타지 풋볼의 주간 정보",
     operation_id="v0_get_weeks",
     tags=["general"],
 )
 def read_weeks(
     skip: int = Query(
-        0, description="The number of items to skip at the beginning of API call."
+        0, description="API 호출 시 건너뛸 항목의 개수"
     ),
     limit: int = Query(
-        100, description="The number of records to return after the skipped records."
+        100, description="건너뛴 항목 이후 반환할 항목의 최대 개수"
     ),
     minimum_last_changed_date: date = Query(
         None,
-        description="The minimum data of change that you want to return records. Exclude any records changed before this.",
+        description="항목을 반환할 최소 변경 날짜. 이 날짜 이전에 변경된 항목은 제외합니다.",
     ),
     db: Session = Depends(get_db),
 ):

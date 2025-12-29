@@ -4,7 +4,7 @@ from airflow.decorators import dag
 from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
 # from airflow.hooks.http_hook import http_hook
-from shared_functions import upsert_player_data
+from chapter10.airflow.dags.shared_functions import upsert_player_data
 
 
 def retrieve_bulk_player_file(**context):
